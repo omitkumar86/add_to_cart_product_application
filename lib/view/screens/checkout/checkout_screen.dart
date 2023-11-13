@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
@@ -29,6 +30,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         elevation: 0,
       ),
       body: Container(
+        height: double.infinity,
+        width: double.infinity,
         decoration: BoxDecoration(
           gradient: new LinearGradient(
               begin: Alignment.topCenter,
@@ -39,32 +42,178 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ]
           ),
         ),
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12.w,vertical:65.h ),
-            child:Column(
-              children: [
-                Center(
-                  child: Lottie.asset(height: 200.h, width: 200.w, "assets/lottie/no_product.json", fit: BoxFit.fitWidth),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10.0.w, vertical: 20.0.h),
-                  child: Text("No Products Found in Cart", style: myStyleRoboto(fontSize: 16.sp, color: AppColors.appWhiteColor, fontWeight: FontWeight.w500),),
-                ),
-              ],
-            ),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+
+              SizedBox(height: 10.h,),
+
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemBuilder: (context, index){
+                  return Container(
+                    margin: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                    height: 85.h,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10.r),
+                      color: AppColors.appWhiteColor,
+                      boxShadow: [
+                        BoxShadow(
+                          offset: Offset(0.5, 0.5),
+                          color: AppColors.secondaryTextColor.withOpacity(0.6),
+                          blurRadius: 3,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
+                            child: CachedNetworkImage(
+                              fit: BoxFit.contain,
+                              imageUrl: 'https://i.dummyjson.com/data/products/1/thumbnail.jpg',
+                              progressIndicatorBuilder: (context, url, downloadProgress) => Image.asset("assets/images/placeholder.jpg", fit: BoxFit.fill,),
+                              errorWidget: (context, url, error) => Image.asset("assets/images/placeholder.jpg", fit: BoxFit.fill,),
+                            ),
+                          ),
+                        ),
+
+                        Expanded(
+                          flex: 8,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(child: Text('iPhone 9', style: myStyleRoboto(fontSize: 14.sp, color: AppColors.appBlackColor, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis,)),
+
+                                    SizedBox(width: 5.w,),
+
+                                    /// Delete Button
+                                    InkWell(
+                                      onTap: (){},
+                                      child: Icon(Icons.delete_outline, color: AppColors.appRedColor, size: 20.sp,),
+                                    ),
+                                  ],
+                                ),
+
+                                /// Price
+                                Row(
+                                  children: [
+                                    Text('\$1256', style: myStyleRoboto(fontSize: 12.sp, color: AppColors.appBlackColor, fontWeight: FontWeight.w500)),
+                                    SizedBox(width: 10.w,),
+                                    Text('\$5452', style: myStyleRoboto(fontSize: 12.sp, color: AppColors.appRedColor, fontWeight: FontWeight.w500, textDirection: TextDecoration.lineThrough, decorationColor: AppColors.appRedColor),),
+                                  ],
+                                ),
+
+                                /// Price Variant & Increment, Decrement Button
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('\$0.0', style: myStyleRoboto(fontSize: 13.sp, color: AppColors.appBlackColor.withOpacity(0.8), fontWeight: FontWeight.w500),),
+
+                                    /// Increment & Decrement Button
+                                    Container(
+                                      height: 30.h,
+                                      width: 100.w,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(30.r),
+                                        color: AppColors.appPrimaryColor,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          /// Decrement
+                                          InkWell(
+                                            onTap: (){
+                                              setState(() {
+
+                                              });
+                                            },
+                                            child: Container(
+                                              height: 30.h,
+                                              width: 30.w,
+                                              margin: EdgeInsets.symmetric(vertical: 2.h),
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: AppColors.appWhiteColor,
+                                              ),
+                                              child: Icon(Icons.remove, color: AppColors.appBlackColor, size: 14.sp,),
+                                            ),
+                                          ),
+
+                                          /// Counter
+                                          Text('12', style: myStyleRoboto(fontSize: 12.sp, color: AppColors.appWhiteColor, fontWeight: FontWeight.w500)),
+
+                                          /// Increment
+                                          InkWell(
+                                            onTap: (){},
+                                            child: Container(
+                                              height: 30.h,
+                                              width: 30.w,
+                                              margin: EdgeInsets.symmetric(vertical: 2.h),
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: AppColors.appWhiteColor,
+                                              ),
+                                              child: Icon(Icons.add, color: AppColors.appBlackColor, size: 14.sp,),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                itemCount: 10,
+              ),
+
+              SizedBox(height: 15.h,),
+
+              /// No Products Found in Cart
+              // Center(
+              //   child: Padding(
+              //     padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 20.h ),
+              //     child: Column(
+              //       mainAxisAlignment: MainAxisAlignment.center,
+              //       children: [
+              //         Center(
+              //           child: Lottie.asset(height: 200.h, width: 200.w, "assets/lottie/no_product.json", fit: BoxFit.fitWidth),
+              //         ),
+              //         Padding(
+              //           padding: EdgeInsets.symmetric(horizontal: 10.0.w, vertical: 20.0.h),
+              //           child: Text("No Products Found in Cart", style: myStyleRoboto(fontSize: 16.sp, color: AppColors.appWhiteColor, fontWeight: FontWeight.w500),),
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
+            ],
           ),
         ),
       ),
       bottomNavigationBar: Container(
         padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-        height: 130.h,
+        height: 120.h,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Container(
               width: double.infinity,
-              height: 50.h,
+              height: 45.h,
               padding: EdgeInsets.symmetric(horizontal: 10.w),
               alignment: Alignment.center,
               decoration: BoxDecoration(
@@ -85,7 +234,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               onTap: (){},
               child: Container(
                 width: double.infinity,
-                height: 50.h,
+                height: 45.h,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: AppColors.appPrimaryColor,

@@ -158,9 +158,22 @@ class _ProductScreenState extends State<ProductScreen> {
                       itemCount: viewAllProductsProvider.productsList.length,
                       itemBuilder: (BuildContext context, int index) {
                         if(index < viewAllProductsProvider.productsList.length){
+                          final productsList = viewAllProductsProvider.productsList[index];
                           return InkWell(
                             onTap: (){
-                              Navigator.of(context).pushNamed(ProductDetailsScreen.routeName);
+                              Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ProductDetailsScreen(
+                                id: productsList.id,
+                                title: productsList.title,
+                                description: productsList.description,
+                                price: productsList.price,
+                                discountPercentage: productsList.discountPercentage,
+                                rating: productsList.rating,
+                                stock: productsList.stock,
+                                thumbnail: productsList.thumbnail,
+                                images: productsList.images,
+                              ),
+                              ),
+                              );
                             },
                             child: Container(
                               margin: EdgeInsets.only(left: index % 2 == 0?12.w:0.w, right: index % 2 == 0?0.w:12.w),

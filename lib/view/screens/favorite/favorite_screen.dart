@@ -28,6 +28,8 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
         elevation: 0,
       ),
       body: Container(
+        height: double.infinity,
+        width: double.infinity,
         decoration: BoxDecoration(
           gradient: new LinearGradient(
               begin: Alignment.topCenter,
