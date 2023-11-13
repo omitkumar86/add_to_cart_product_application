@@ -26,7 +26,7 @@ class ProductDetailsScreen extends StatefulWidget {
 }
 
 class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
-
+  bool isFavorite = false;
   // int _selectedImageIndex = 0;
   // int get selectedImageIndex => _selectedImageIndex;
   //
@@ -162,9 +162,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   Text('${widget.title}', style: myStyleRoboto(fontSize: 15.sp, color: AppColors.appBlackColor, fontWeight: FontWeight.w500), textAlign: TextAlign.left,),
                   InkWell(
                     onTap: (){
-
+                      setState(() {
+                        isFavorite = !isFavorite;
+                      });
                     },
-                    child: Icon(Icons.favorite_outline, color: AppColors.appPrimaryColor, size: 22.sp,),
+                    child: isFavorite == false?
+                    Icon(Icons.favorite_outline, color: AppColors.appPrimaryColor, size: 22.sp,):
+                    Icon(Icons.favorite, color: AppColors.appRedColor, size: 22.sp,),
                   ),
                 ],
               ),

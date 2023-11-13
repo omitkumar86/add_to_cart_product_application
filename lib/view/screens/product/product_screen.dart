@@ -23,6 +23,8 @@ class ProductScreen extends StatefulWidget {
 class _ProductScreenState extends State<ProductScreen> {
 
   bool isShopping = false;
+  bool isFavorite = false;
+  int selectedIndex = 0;
   final ScrollController scrollController = ScrollController();
 
   @override
@@ -277,9 +279,13 @@ class _ProductScreenState extends State<ProductScreen> {
                                     right: 5,
                                     child: InkWell(
                                       onTap: (){
-
+                                        setState(() {
+                                          isFavorite = !isFavorite;
+                                        });
                                       },
-                                      child: Icon(Icons.favorite_outline, color: AppColors.appPrimaryColor, size: 20.sp,),
+                                      child: isFavorite == false?
+                                      Icon(Icons.favorite_outline, color: AppColors.appPrimaryColor, size: 20.sp,):
+                                      Icon(Icons.favorite, color: AppColors.appRedColor, size: 20.sp,),
                                     ),
                                   ),
 
