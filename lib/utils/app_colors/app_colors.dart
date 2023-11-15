@@ -8,9 +8,6 @@ class AppColors{
   static const Color appRedColor = Colors.red;
   static const Color appDeepOrangeColor = Colors.deepOrangeAccent;
 
-  // static const Color appPrimaryColor = Color(0xff0000FF);
-  // static const Color appTextColor = Color(0xfffe4d00);
-
   static const Color appBlackColor = Color(0xff000000);
   static const Color appBlackColor54 = Colors.black54;
   static const Color appBlackColor26 = Colors.black26;

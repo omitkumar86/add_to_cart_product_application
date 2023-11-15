@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../data/datasource/remote/dio/dio_client.dart';
 import '../data/model/base_model/api_response.dart';
 import '../data/model/response_model/view_all_products_response_model.dart';
@@ -82,5 +85,29 @@ class ViewAllProductsProvider with ChangeNotifier{
     notifyListeners();
   }
 
+
+  bool? _isFavorite = false;
+
+
+  bool? get isFavorite => _isFavorite;
+
+  void setIsFavorite(dynamic isFavorite){
+    isFavorite = _isFavorite;
+  }
+
+  // Function to save favorite status to shared preferences
+  Future<void> saveFavoriteStatus(int productId, bool isFavorite) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // Use the product ID as the key to store the favorite status
+    await prefs.setBool('favorite_$productId', isFavorite);
+    notifyListeners();
+  }
+
+  // Function to get favorite status from shared preferences
+  Future<bool> getFavoriteStatus(int productId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // Use the product ID as the key to retrieve the favorite status
+    return prefs.getBool('favorite_$productId') ?? false;
+  }
 
 }

@@ -1,8 +1,14 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../data/model/response_model/view_all_products_response_model.dart';
+import '../../../provider/view_all_products_provider.dart';
 import '../../../utils/app_colors/app_colors.dart';
 import '../../../utils/app_style/app_style.dart';
 import '../../widgets/image_view_screen.dart';
@@ -18,8 +24,9 @@ class ProductDetailsScreen extends StatefulWidget {
   dynamic stock;
   dynamic thumbnail;
   List<String>? images;
+  bool? isFavorite;
   static const String routeName = 'product_details_screen';
-  ProductDetailsScreen({super.key, this.id, this.title, this.discountPercentage, this.stock, this.price, this.thumbnail, this.images, this.description, this.rating});
+  ProductDetailsScreen({super.key, this.id, this.title, this.discountPercentage, this.stock, this.price, this.thumbnail, this.images, this.description, this.rating, this.isFavorite});
 
   @override
   State<ProductDetailsScreen> createState() => _ProductDetailsScreenState();
@@ -163,10 +170,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   InkWell(
                     onTap: (){
                       setState(() {
-                        isFavorite = !isFavorite;
+                        Provider.of<ViewAllProductsProvider>(context, listen: false).setIsFavorite(widget.isFavorite);
+                        widget.isFavorite = !widget.isFavorite!;
                       });
+                      Provider.of<ViewAllProductsProvider>(context, listen: false).saveFavoriteStatus(widget.id, widget.isFavorite!);
                     },
-                    child: isFavorite == false?
+                    child: widget.isFavorite == false?
                     Icon(Icons.favorite_outline, color: AppColors.appPrimaryColor, size: 22.sp,):
                     Icon(Icons.favorite, color: AppColors.appRedColor, size: 22.sp,),
                   ),
