@@ -1,3 +1,5 @@
+import 'package:add_to_cart_product_application/provider/cart_provider.dart';
+import 'package:add_to_cart_product_application/provider/product_details_provider.dart';
 import 'package:add_to_cart_product_application/provider/view_all_products_provider.dart';
 import 'package:add_to_cart_product_application/utils/app_colors/app_colors.dart';
 import 'package:add_to_cart_product_application/utils/constants/app_constants.dart';
@@ -16,6 +18,8 @@ void main() async{
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => di.sl<ViewAllProductsProvider>()),
+        ChangeNotifierProvider(create: (context) => di.sl<CartProvider>()),
+        ChangeNotifierProvider(create: (context) => di.sl<ProductDetailsProvider>()),
       ],
       child: const MyApp(),
     ),

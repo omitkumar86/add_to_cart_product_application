@@ -65,6 +65,8 @@ class ProductData {
   final dynamic thumbnail;
   final List<String>? images;
   bool? isFavorite = false;
+  bool? isShopping = false;
+  dynamic productQuantity;
 
   ProductData({
     this.id,
@@ -79,6 +81,8 @@ class ProductData {
     this.thumbnail,
     this.images,
     this.isFavorite,
+    this.isShopping,
+    this.productQuantity,
   });
 
   factory ProductData.fromJson(Map<String, dynamic> json) => ProductData(
@@ -94,6 +98,8 @@ class ProductData {
     thumbnail: json["thumbnail"],
     images: json["images"] == null ? [] : List<String>.from(json["images"]!.map((x) => x)),
     isFavorite: json['isFavorite'] ?? false,
+    isShopping: json['isShopping'] ?? false,
+    productQuantity: json['productQuantity'],
   );
 
   Map<String, dynamic> toJson() => {
@@ -109,5 +115,7 @@ class ProductData {
     "thumbnail": thumbnail,
     "images": images == null ? [] : List<dynamic>.from(images!.map((x) => x)),
     "isFavorite": isFavorite ?? false,
+    "isShopping": isShopping ?? false,
+    "productQuantity": productQuantity,
   };
 }

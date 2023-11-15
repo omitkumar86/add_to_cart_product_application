@@ -43,6 +43,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ),
         ),
         child: SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
           child: Column(
             children: [
 

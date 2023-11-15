@@ -10,6 +10,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:provider/provider.dart';
+import '../../../provider/cart_provider.dart';
 import '../checkout/checkout_screen.dart';
 import '../favorite/favorite_screen.dart';
 
@@ -23,10 +24,9 @@ class ProductScreen extends StatefulWidget {
 
 class _ProductScreenState extends State<ProductScreen> {
 
-  bool isShopping = false;
-  bool isFavorite = false;
   int selectedIndex = 0;
   final ScrollController scrollController = ScrollController();
+
 
   @override
   void initState() {
@@ -68,6 +68,8 @@ class _ProductScreenState extends State<ProductScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ProductData? productModel = Provider.of<ViewAllProductsProvider>(context, listen: false).productData;
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -128,8 +130,8 @@ class _ProductScreenState extends State<ProductScreen> {
           ),
         ],
       ),
-      body: Consumer<ViewAllProductsProvider>(
-        builder: (context, viewAllProductsProvider, child) {
+      body: Consumer2<ViewAllProductsProvider, CartProvider>(
+        builder: (context, viewAllProductsProvider, cartProvider, child) {
           return RefreshIndicator(
             color: AppColors.appWhiteColor,
             backgroundColor: AppColors.appPrimaryColor,
@@ -154,6 +156,7 @@ class _ProductScreenState extends State<ProductScreen> {
                 ),
               ),
               child: SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
                 child: Column(
                   children: [
 
@@ -165,7 +168,7 @@ class _ProductScreenState extends State<ProductScreen> {
                           crossAxisCount: 2,
                           mainAxisSpacing: 15,
                           crossAxisSpacing: 20,
-                          childAspectRatio: 4/4.5,
+                          childAspectRatio: 4/4.6,
                         ),
                         itemCount: viewAllProductsProvider.productsList.length,
                         itemBuilder: (BuildContext context, int index) {
@@ -184,6 +187,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                   thumbnail: productsList.thumbnail,
                                   images: productsList.images,
                                   isFavorite: productsList.isFavorite,
+                                  productQuantity: productsList.productQuantity,
                                 ),
                                 ),
                                 );
@@ -240,10 +244,17 @@ class _ProductScreenState extends State<ProductScreen> {
                                                     ],
                                                   ),
 
+                                                  Row(
+                                                    children: [
+                                                      Icon(Icons.star, color: AppColors.appDeepOrangeColor, size: 15.sp,),
+                                                      Text(' ${viewAllProductsProvider.productsList[index].rating}', style: myStyleRoboto(fontSize: 12.sp, color: AppColors.appDeepOrangeColor, fontWeight: FontWeight.w500,),),
+                                                    ],
+                                                  ),
+
 
                                                   Row(
                                                     children: [
-                                                      Text('Stock', style: myStyleRoboto(fontSize: 12.sp, color: AppColors.appBlackColor.withOpacity(0.6), fontWeight: FontWeight.w400),),
+                                                      Text('Stock', style: myStyleRoboto(fontSize: 12.sp, color: AppColors.appBlackColor.withOpacity(0.7), fontWeight: FontWeight.w400),),
                                                       LinearPercentIndicator(
                                                         width: 90.0,
                                                         animation: true,
@@ -251,7 +262,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                                         animationDuration: 1500,
                                                         percent: viewAllProductsProvider.productsList[index].stock > 100?1:viewAllProductsProvider.productsList[index].stock/100,
                                                         center: Text("${viewAllProductsProvider.productsList[index].stock}", style: myStyleRoboto(fontSize: 10.sp, color: AppColors.appWhiteColor, fontWeight: FontWeight.w400),),
-                                                        progressColor: Colors.orange,
+                                                        progressColor: AppColors.appDeepOrangeColor,
                                                         barRadius: Radius.circular(10.r),
                                                         backgroundColor: AppColors.appBlackColor.withOpacity(0.3),
                                                       ),
@@ -290,7 +301,6 @@ class _ProductScreenState extends State<ProductScreen> {
                                       right: 5,
                                       child: InkWell(
                                         onTap: (){
-
                                           setState(() {
                                             viewAllProductsProvider.setIsFavorite(viewAllProductsProvider.productsList[index].isFavorite!);
                                             viewAllProductsProvider.productsList[index].isFavorite = !viewAllProductsProvider.productsList[index].isFavorite!;
@@ -305,7 +315,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                     ),
 
                                     /// Increment and Decrement
-                                    isShopping == true?
+                                    cartProvider.isShopping == true?
                                     Positioned(
                                       top: 90,
                                       right: 5,
@@ -322,9 +332,13 @@ class _ProductScreenState extends State<ProductScreen> {
                                             /// Decrement
                                             InkWell(
                                               onTap: (){
-                                                setState(() {
-                                                  isShopping = !isShopping;
-                                                });
+                                                cartProvider.counterDecrement();
+                                                if(cartProvider.counter == 0){
+                                                  cartProvider.isShopping = false;
+                                                }
+                                                // setState(() {
+                                                //   isShopping = !isShopping;
+                                                // });
                                               },
                                               child: Container(
                                                 height: 30.h,
@@ -339,11 +353,14 @@ class _ProductScreenState extends State<ProductScreen> {
                                             ),
 
                                             /// Counter
-                                            Text('12', style: myStyleRoboto(fontSize: 12.sp, color: AppColors.appWhiteColor, fontWeight: FontWeight.w500)),
+                                            Text('${cartProvider.counter}', style: myStyleRoboto(fontSize: 12.sp, color: AppColors.appWhiteColor, fontWeight: FontWeight.w500)),
 
                                             /// Increment
                                             InkWell(
-                                              onTap: (){},
+                                              onTap: (){
+                                                cartProvider.counterIncrement();
+                                                // cartProvider.incrementProductCounter(viewAllProductsProvider.productsList[index].id);
+                                              },
                                               child: Container(
                                                 height: 30.h,
                                                 width: 30.w,
@@ -361,14 +378,15 @@ class _ProductScreenState extends State<ProductScreen> {
                                     ): SizedBox.shrink(),
 
                                     /// Shopping Cart
-                                    isShopping == false?
+                                    cartProvider.isShopping == false?
                                     Positioned(
                                       bottom: 5,
                                       right: 5,
                                       child: InkWell(
                                         onTap: (){
                                           setState(() {
-                                            isShopping = !isShopping;
+                                            cartProvider.isShopping = !cartProvider.isShopping;
+                                            cartProvider.counterIncrement();
                                           });
                                         },
                                         child: Container(

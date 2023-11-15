@@ -16,6 +16,7 @@ class ViewAllProductsProvider with ChangeNotifier{
 
   bool _isLoading = false;
   ViewAllProductsResponseModel? _viewAllProductsResponseModel;
+  ProductData? _productData;
   List<ProductData> _productsList = [];
   List<ProductData>? _newProductsList;
   int _page = 1;
@@ -24,6 +25,7 @@ class ViewAllProductsProvider with ChangeNotifier{
   /// Getter
   bool get isLoading => _isLoading;
   ViewAllProductsResponseModel? get viewAllProductsResponseModel => _viewAllProductsResponseModel;
+  ProductData? get productData => _productData;
   List<ProductData> get productsList => _productsList;
   List<ProductData>? get newProductsList => _newProductsList;
   int get page => _page;
@@ -65,6 +67,7 @@ class ViewAllProductsProvider with ChangeNotifier{
       _newProductsList = null;
 
       _viewAllProductsResponseModel = ViewAllProductsResponseModel.fromJson(apiResponse.response!.data);
+      // _productData = _viewAllProductsResponseModel!.data;
       _newProductsList = _viewAllProductsResponseModel!.data!.productsList;
       _productsList = _productsList + _newProductsList!;
 
