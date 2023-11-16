@@ -44,7 +44,6 @@ dependencies:
   shared_preferences: ^2.2.2
   intl: ^0.18.1
   carousel_slider: ^4.2.1
-  shimmer: ^3.0.0
   cached_network_image: ^3.3.0
   percent_indicator: ^4.2.3
   lottie: ^2.7.0

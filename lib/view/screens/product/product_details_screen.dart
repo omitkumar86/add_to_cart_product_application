@@ -1,11 +1,9 @@
-import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../../data/model/response_model/view_all_products_response_model.dart';
 import '../../../provider/cart_provider.dart';
 import '../../../provider/view_all_products_provider.dart';
@@ -44,22 +42,25 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: InkWell(
-          onTap: (){
-            Navigator.of(context).pop();
-          },
-          child: Icon(Icons.arrow_back_outlined, color: AppColors.appWhiteColor,),
-        ),
-        automaticallyImplyLeading: false,
-        backgroundColor: AppColors.appPrimaryColor,
-        title: Text('Details View', style: myStyleRoboto(fontSize: 16.sp, color: AppColors.appWhiteColor, fontWeight: FontWeight.w500),),
-        elevation: 0,
-      ),
-      body: Consumer<CartProvider>(
-        builder: (context, cartProvider, child) {
-          return RefreshIndicator(
+    return Consumer2<CartProvider, ViewAllProductsProvider>(
+        builder: (context, cartProvider, viewAllProductsProvider, child) {
+          int cartIndex = cartProvider.cartList.indexWhere((item) {
+            return item.id.toString() == widget.id.toString();
+          });
+        return Scaffold(
+          appBar: AppBar(
+            leading: InkWell(
+              onTap: (){
+                Navigator.of(context).pop();
+              },
+              child: Icon(Icons.arrow_back_outlined, color: AppColors.appWhiteColor,),
+            ),
+            automaticallyImplyLeading: false,
+            backgroundColor: AppColors.appPrimaryColor,
+            title: Text('Details View', style: myStyleRoboto(fontSize: 16.sp, color: AppColors.appWhiteColor, fontWeight: FontWeight.w500),),
+            elevation: 0,
+          ),
+          body: RefreshIndicator(
             color: AppColors.appWhiteColor,
             backgroundColor: AppColors.appPrimaryColor,
             onRefresh: () {
@@ -243,10 +244,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               /// Decrement
                               InkWell(
                                 onTap: (){
-                                  cartProvider.counterDecrement();
-                                  if(cartProvider.counter == 0){
-                                    cartProvider.isShopping = false;
-                                  }
+                                  // cartProvider.counterDecrement();
+                                  // if(cartProvider.productQuantity == 0){
+                                  //   cartProvider.isShopping = false;
+                                  // }
+                                  int cartIndex = cartProvider.cartList.indexWhere((product) => product.id == cartProvider.selectedProductId);
+                                  cartProvider.updateCartProductQuantity(cartIndex, cartProvider.cartList[cartIndex].productQuantity!-1);
                                 },
                                 child: Container(
                                   height: 30.h,
@@ -261,15 +264,17 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               ),
 
                               /// Counter
-                              Text('${cartProvider.counter}', style: myStyleRoboto(fontSize: 12.sp, color: AppColors.appWhiteColor, fontWeight: FontWeight.w500)),
+                              Text('${cartProvider.productQuantity}', style: myStyleRoboto(fontSize: 12.sp, color: AppColors.appWhiteColor, fontWeight: FontWeight.w500)),
 
                               /// Increment
                               InkWell(
                                 onTap: (){
-                                  cartProvider.counterIncrement();
-                                  if(cartProvider.counter != 0){
-                                    cartProvider.isShopping = true;
-                                  }
+                                  // cartProvider.counterIncrement();
+                                  // if(cartProvider.productQuantity != 0){
+                                  //   cartProvider.isShopping = true;
+                                  // }
+                                  int cartIndex = cartProvider.cartList.indexWhere((product) => product.id == cartProvider.selectedProductId);
+                                  cartProvider.updateCartProductQuantity(cartIndex, cartProvider.cartList[cartIndex].productQuantity!+1);
                                 },
                                 child: Container(
                                   height: 30.h,
@@ -345,34 +350,47 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 ),
               ),
             ),
-          );
-        },
-      ),
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-        height: 60.h,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            /// Buy Button
-            InkWell(
-              onTap: (){
-                Navigator.of(context).push(MaterialPageRoute(builder: (context)=>CheckoutScreen()));
-              },
-              child: Container(
-                width: double.infinity,
-                height: 45.h,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: AppColors.appPrimaryColor,
-                  borderRadius: BorderRadius.circular(10.r),
+          ),
+          bottomNavigationBar: Container(
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+            height: 60.h,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                /// Buy Button
+                InkWell(
+                  onTap: (){
+                    ProductData selectedProduct = viewAllProductsProvider.productsList.firstWhere((product) => product.id == widget.id);
+
+                    int cartIndex = cartProvider.cartList.indexWhere((item) {
+                      return item.id.toString() == widget.id.toString();
+                    });
+
+                    if(cartIndex == -1){
+                      cartProvider.addToCart(model: selectedProduct, context: context, cartId: 'cart_list', quantity: cartProvider.productQuantity == null? 1 : cartProvider.productQuantity ).then((value){
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => CheckoutScreen()));
+                      });
+                    }else{
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => CheckoutScreen()));
+                    }
+
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    height: 45.h,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.appPrimaryColor,
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Text("Buy Now", style: myStyleRoboto(fontSize: 16.sp, color: AppColors.appWhiteColor, fontWeight: FontWeight.w600),),
+                  ),
                 ),
-                child: Text("Buy Now", style: myStyleRoboto(fontSize: 16.sp, color: AppColors.appWhiteColor, fontWeight: FontWeight.w600),),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      }
     );
   }
 }

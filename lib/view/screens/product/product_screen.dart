@@ -68,7 +68,6 @@ class _ProductScreenState extends State<ProductScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ProductData? productModel = Provider.of<ViewAllProductsProvider>(context, listen: false).productData;
 
     return Scaffold(
       appBar: AppBar(
@@ -77,56 +76,60 @@ class _ProductScreenState extends State<ProductScreen> {
         title: Text('All Products', style: myStyleRoboto(fontSize: 16.sp, color: AppColors.appWhiteColor, fontWeight: FontWeight.w500),),
         elevation: 0,
         actions: [
-          Padding(
-            padding: EdgeInsets.only(right: 10.w),
-            child: Row(
-              children: [
-                InkWell(
-                  onTap: (){
-                    Navigator.of(context).pushNamed(CheckoutScreen.routeName);
-                  },
-                  child: Stack(
-                    children: [
-                      Container(
-                        margin: const EdgeInsets.all(5),
-                        height: 60.h,
-                        width: 60.w,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.appWhiteColor,
-                        ),
-                        child: Icon(Icons.shopping_cart_outlined, color: AppColors.appPrimaryColor, size: 18.sp,),
-                      ),
-
-                      Positioned(
-                        top: 0,
-                        right: 0,
-                        child: Container(
-                          height: 28.h,
-                          width: 28.w,
-                          alignment: Alignment.center,
-                          padding: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.appRedColor,
+          Consumer<CartProvider>(
+            builder: (context, cartProvider, child) {
+              return Padding(
+                padding: EdgeInsets.only(right: 10.w),
+                child: Row(
+                  children: [
+                    InkWell(
+                      onTap: (){
+                        Navigator.of(context).pushNamed(CheckoutScreen.routeName);
+                      },
+                      child: Stack(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.all(5),
+                            height: 60.h,
+                            width: 60.w,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.appWhiteColor,
+                            ),
+                            child: Icon(Icons.shopping_cart_outlined, color: AppColors.appPrimaryColor, size: 18.sp,),
                           ),
-                          child: Text('0', style: myStyleRoboto(fontSize: 10.sp, color: AppColors.appWhiteColor, fontWeight: FontWeight.w500),),
-                        ),
+
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: Container(
+                              height: 28.h,
+                              width: 28.w,
+                              alignment: Alignment.center,
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppColors.appRedColor,
+                              ),
+                              child: Text('${cartProvider.cartList.length}', style: myStyleRoboto(fontSize: 10.sp, color: AppColors.appWhiteColor, fontWeight: FontWeight.w500),),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
 
-                SizedBox(width: 8.w,),
+                    SizedBox(width: 8.w,),
 
-                InkWell(
-                  onTap: (){
-                    Navigator.of(context).pushNamed(FavoriteScreen.routeName);
-                  },
-                  child: Icon(Icons.favorite_outline, color: AppColors.appWhiteColor, size: 25.sp,),
+                    InkWell(
+                      onTap: (){
+                        Navigator.of(context).pushNamed(FavoriteScreen.routeName);
+                      },
+                      child: Icon(Icons.favorite_outline, color: AppColors.appWhiteColor, size: 25.sp,),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ],
       ),
@@ -139,6 +142,7 @@ class _ProductScreenState extends State<ProductScreen> {
               Provider.of<ViewAllProductsProvider>(context, listen: false).resetPage();
               Provider.of<ViewAllProductsProvider>(context, listen: false).clearList();
               _load(reLoad: true, context: context, skip: 1, limit: 20);
+              cartProvider.clearList();
               return Future<void>.delayed(const Duration(seconds: 2));
             },
             child: Container(
@@ -315,7 +319,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                     ),
 
                                     /// Increment and Decrement
-                                    cartProvider.isShopping == true?
+                                    viewAllProductsProvider.productsList.firstWhere((product) => product.id == productsList.id).isShopping == true?
                                     Positioned(
                                       top: 90,
                                       right: 5,
@@ -332,9 +336,14 @@ class _ProductScreenState extends State<ProductScreen> {
                                             /// Decrement
                                             InkWell(
                                               onTap: (){
-                                                cartProvider.counterDecrement();
-                                                if(cartProvider.counter == 0){
-                                                  cartProvider.isShopping = false;
+                                                int cartIndex = cartProvider.cartList.indexWhere((product) => product.id == cartProvider.selectedProductId);
+
+                                                cartProvider.updateCartProductQuantity(cartIndex, cartProvider.cartList[cartIndex].productQuantity!-1);
+                                                if(cartProvider.productQuantity == 0){
+                                                  if(cartProvider.cartList.isNotEmpty){
+                                                    cartProvider.deleteProductFromCartLocal(cartProvider.cartList[cartIndex].id);
+                                                  }
+                                                  viewAllProductsProvider.productsList.firstWhere((product) => product.id == productsList.id).isShopping == false;
                                                 }
                                                 // setState(() {
                                                 //   isShopping = !isShopping;
@@ -353,13 +362,17 @@ class _ProductScreenState extends State<ProductScreen> {
                                             ),
 
                                             /// Counter
-                                            Text('${cartProvider.counter}', style: myStyleRoboto(fontSize: 12.sp, color: AppColors.appWhiteColor, fontWeight: FontWeight.w500)),
+                                            Text('${cartProvider.cartList.firstWhere((element) => element.id == productsList.id).productQuantity}', style: myStyleRoboto(fontSize: 12.sp, color: AppColors.appWhiteColor, fontWeight: FontWeight.w500)),
 
                                             /// Increment
                                             InkWell(
                                               onTap: (){
-                                                cartProvider.counterIncrement();
-                                                // cartProvider.incrementProductCounter(viewAllProductsProvider.productsList[index].id);
+                                                // Find the index of the selected product
+                                                // int selectedIndex = viewAllProductsProvider.productsList.indexWhere((product) => product.id == cartProvider.selectedProductId);
+                                                // cartProvider.incrementProductCounter(selectedIndex);
+
+                                                int cartIndex = cartProvider.cartList.indexWhere((product) => product.id == cartProvider.selectedProductId);
+                                                cartProvider.updateCartProductQuantity(cartIndex, cartProvider.cartList[cartIndex].productQuantity!+1);
                                               },
                                               child: Container(
                                                 height: 30.h,
@@ -375,18 +388,32 @@ class _ProductScreenState extends State<ProductScreen> {
                                           ],
                                         ),
                                       ),
-                                    ): SizedBox.shrink(),
+                                    ) : SizedBox.shrink(),
 
                                     /// Shopping Cart
-                                    cartProvider.isShopping == false?
+                                    viewAllProductsProvider.productsList.firstWhere((product) => product.id == productsList.id).isShopping == false?
                                     Positioned(
                                       bottom: 5,
                                       right: 5,
                                       child: InkWell(
                                         onTap: (){
                                           setState(() {
-                                            cartProvider.isShopping = !cartProvider.isShopping;
-                                            cartProvider.counterIncrement();
+
+                                            /// Model
+                                            ProductData selectedProduct = viewAllProductsProvider.productsList.firstWhere((product) => product.id == productsList.id);
+
+                                            /// Find the product with the specific ID
+                                            cartProvider.selectedProductId = viewAllProductsProvider.productsList.firstWhere((product) => product.id == productsList.id).id;
+
+                                            /// Set isShopping to true only for the selected item
+                                            cartProvider.isShopping = viewAllProductsProvider.productsList.firstWhere((product) => product.id == productsList.id).isShopping = true;
+
+                                            cartProvider.addToCart(model: selectedProduct, context: context, cartId: 'cart_list', quantity: 1);
+
+                                            // int selectedIndex = viewAllProductsProvider.productsList.indexWhere((product) => product.id == cartProvider.selectedProductId);
+
+                                            // cartProvider.incrementProductCounter(selectedIndex);
+                                            // cartProvider.incrementProductCounter(selectedIndex);
                                           });
                                         },
                                         child: Container(
@@ -399,7 +426,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                           child: Icon(Icons.shopping_cart_outlined, color: AppColors.appWhiteColor, size: 14.sp,),
                                         ),
                                       ),
-                                    ): SizedBox.shrink(),
+                                    ) : SizedBox.shrink(),
 
                                     /// Stock Out Product
                                     viewAllProductsProvider.productsList[index].stock == 0?
@@ -447,7 +474,7 @@ class _ProductScreenState extends State<ProductScreen> {
                           Center(
                             child: Lottie.asset(height: 200.h, width: 200.w, "assets/lottie/no_product.json", fit: BoxFit.fitWidth),
                           ),
-                          SizedBox(height: 10,),
+                          SizedBox(height: 20,),
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: 20.0,vertical: 0.0),
                             child: Text('No Products Found'),
@@ -478,8 +505,8 @@ class _ProductScreenState extends State<ProductScreen> {
               ),
             ),
           );
-          },
-),
+        },
+      ),
     );
   }
 }
