@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../data/model/response_model/view_all_products_response_model.dart';
 
 class CartProvider with ChangeNotifier {
-  int _counterBuilderBuild = 1;
   String? _status;
   String? _message;
   bool _getCartDataIsLoading = false;
@@ -23,17 +22,8 @@ class CartProvider with ChangeNotifier {
   int _counter = 0;
   bool isShopping = false;
   bool _isFavorite = false;
-
   int? selectedProductId;
 
-
-
-  /// Getter
-  int getCounterBuilderBuild(){
-    _counterBuilderBuild++;
-    notifyListeners();
-    return _counterBuilderBuild;
-  }
 
 
   /// Getter
@@ -50,34 +40,7 @@ class CartProvider with ChangeNotifier {
   double get cartTotal => _cartTotal;
   int get cartValue => _cartValue;
   int get counter => _counter;
-  // bool get isShopping => _isShopping;
   bool get isFavorite => _isFavorite;
-
-  /// Setter
-  // void setIsShopping(dynamic isShopping){
-  //   isShopping = _isShopping;
-  // }
-
-
-  void counterIncrement(){
-    _productQuantity++;
-    notifyListeners();
-  }
-
-  void counterDecrement(){
-    if(_productQuantity > 0){
-      _productQuantity--;
-    }
-    notifyListeners();
-  }
-
-  void incrementProductCounter(int productId) {
-    final productIndex = _cartList.indexWhere((product) => product.id == productId);
-    if (productIndex != -1) {
-      _productQuantity++;
-      notifyListeners();
-    }
-  }
 
 
 
@@ -134,7 +97,6 @@ class CartProvider with ChangeNotifier {
         print(cartList[index].title);
         print(">>>>>>>>>>>>>>>>>>>>>>>>${cartList[index].productQuantity}");
       }
-      //cartList![index].productQuantity!+1;
       cartList[index].productQuantity = cartList[index].productQuantity! + 1;
 
       if(kDebugMode){
@@ -160,21 +122,6 @@ class CartProvider with ChangeNotifier {
     return prefs.setString(key!, json.encode(value!));
   }
 
-  /// For Read Cart List
-  Future<List<ProductData>> readCartList({String? key}) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<ProductData> list = [];
-    if (prefs.getString(key!) != null) {
-      // list = json.decode(prefs.getString(key)!).cast<CategoryWiseProductData>();
-      if(kDebugMode){
-        print("get cart====>");
-        print(prefs.getString(key)!);
-      }
-      return list;
-    }
-    return list;
-  }
-
   /// For Add to Cart
   Future<bool> addToCart({ProductData? model, BuildContext? context, required dynamic cartId, required dynamic quantity}) async{
     bool? result = false;
@@ -190,6 +137,7 @@ class CartProvider with ChangeNotifier {
 
     if (model != null) {
       final cartModel = ProductData(
+        isShopping: model.isShopping,
         id: model.id,
         title: model.title,
         price: model.price,
@@ -197,7 +145,6 @@ class CartProvider with ChangeNotifier {
         description: model.description,
         thumbnail: model.thumbnail,
         productQuantity: quantity != null && quantity > 1 ? quantity : 1,
-        // productQuantity: model.productQuantity != null? model.productQuantity : 1,
         stock: model.stock,
       );
 
@@ -214,7 +161,6 @@ class CartProvider with ChangeNotifier {
       }
 
       saveCartList(key: 'cart_list', value: cartList);
-      // _cartList.add(cartModel);
 
       notifyListeners();
     }
@@ -234,7 +180,6 @@ class CartProvider with ChangeNotifier {
         print(">>>>>>>>>>>>>>>>>>>>>>>>${cartList[index].productQuantity}");
       }
 
-      //cartList![index].productQuantity!+1;
       cartList[index].productQuantity = quantity!;
 
       calculateCartDetails();
@@ -242,15 +187,8 @@ class CartProvider with ChangeNotifier {
     }
   }
 
-  /// For Remove Cart List
-  // void removeCartList(ProductData model) {
-  //   cartList.removeWhere((element) => element.id == model.id);
-  //   calculateCartDetails();
-  //   notifyListeners();
-  // }
-
   /// For Remove Cart List Api
-  Future<bool> deleteProductFromCartLocal(dynamic id) async{
+  Future<bool> deleteProductFromCartLocal({required BuildContext context, dynamic id}) async{
     try{
       cartList.removeWhere((element) {
         return element.id.toString() == id.toString();
@@ -263,7 +201,5 @@ class CartProvider with ChangeNotifier {
       return false;
     }
   }
-
-
 
 }

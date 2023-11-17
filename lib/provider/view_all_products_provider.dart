@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../data/datasource/remote/dio/dio_client.dart';
@@ -67,7 +65,6 @@ class ViewAllProductsProvider with ChangeNotifier{
       _newProductsList = null;
 
       _viewAllProductsResponseModel = ViewAllProductsResponseModel.fromJson(apiResponse.response!.data);
-      // _productData = _viewAllProductsResponseModel!.data;
       _newProductsList = _viewAllProductsResponseModel!.data!.productsList;
       _productsList = _productsList + _newProductsList!;
 

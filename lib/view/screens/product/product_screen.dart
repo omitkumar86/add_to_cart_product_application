@@ -13,6 +13,7 @@ import 'package:provider/provider.dart';
 import '../../../provider/cart_provider.dart';
 import '../checkout/checkout_screen.dart';
 import '../favorite/favorite_screen.dart';
+import 'package:collection/collection.dart';
 
 class ProductScreen extends StatefulWidget {
   static const String routeName = 'product_screen';
@@ -140,9 +141,12 @@ class _ProductScreenState extends State<ProductScreen> {
             backgroundColor: AppColors.appPrimaryColor,
             onRefresh: () {
               Provider.of<ViewAllProductsProvider>(context, listen: false).resetPage();
-              Provider.of<ViewAllProductsProvider>(context, listen: false).clearList();
+              if(cartProvider.cartList.isEmpty){
+                Provider.of<ViewAllProductsProvider>(context, listen: false).clearList();
+              }
+              // Provider.of<ViewAllProductsProvider>(context, listen: false).clearList();
               _load(reLoad: true, context: context, skip: 1, limit: 20);
-              cartProvider.clearList();
+              // cartProvider.clearList();
               return Future<void>.delayed(const Duration(seconds: 2));
             },
             child: Container(
@@ -319,7 +323,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                     ),
 
                                     /// Increment and Decrement
-                                    viewAllProductsProvider.productsList.firstWhere((product) => product.id == productsList.id).isShopping == true?
+                                    viewAllProductsProvider.productsList.firstWhere((product) => product.id == productsList.id).isShopping == true && cartProvider.cartList.firstWhereOrNull((element) => element.id == productsList.id)?.productQuantity != null?
                                     Positioned(
                                       top: 90,
                                       right: 5,
@@ -336,18 +340,19 @@ class _ProductScreenState extends State<ProductScreen> {
                                             /// Decrement
                                             InkWell(
                                               onTap: (){
-                                                int cartIndex = cartProvider.cartList.indexWhere((product) => product.id == cartProvider.selectedProductId);
+                                                int cartIndex = cartProvider.cartList.indexWhere((product) => product.id == productsList.id);
 
                                                 cartProvider.updateCartProductQuantity(cartIndex, cartProvider.cartList[cartIndex].productQuantity!-1);
-                                                if(cartProvider.productQuantity == 0){
+                                                if(cartProvider.cartList[cartIndex].productQuantity ==0){
+                                                  viewAllProductsProvider.productsList.firstWhere((product) => product.id == productsList.id).isShopping = false;
                                                   if(cartProvider.cartList.isNotEmpty){
-                                                    cartProvider.deleteProductFromCartLocal(cartProvider.cartList[cartIndex].id);
+                                                    cartProvider.deleteProductFromCartLocal(context: context, id: cartProvider.cartList[cartIndex].id.toString());
                                                   }
+                                                  print("Check IsShopping>>>${viewAllProductsProvider.productsList.firstWhere((product) => product.id == productsList.id).isShopping}");
                                                   viewAllProductsProvider.productsList.firstWhere((product) => product.id == productsList.id).isShopping == false;
                                                 }
-                                                // setState(() {
-                                                //   isShopping = !isShopping;
-                                                // });
+
+                                                print("Check ID :${cartProvider.cartList.firstWhereOrNull((element) => element.id == productsList.id)?.productQuantity}");
                                               },
                                               child: Container(
                                                 height: 30.h,
@@ -362,17 +367,18 @@ class _ProductScreenState extends State<ProductScreen> {
                                             ),
 
                                             /// Counter
-                                            Text('${cartProvider.cartList.firstWhere((element) => element.id == productsList.id).productQuantity}', style: myStyleRoboto(fontSize: 12.sp, color: AppColors.appWhiteColor, fontWeight: FontWeight.w500)),
+
+                                            Text(cartProvider.cartList.firstWhereOrNull((product) => product.id == productsList.id)?.productQuantity != null?'${cartProvider.cartList.firstWhereOrNull((product) => product.id == productsList.id)?.productQuantity}':'0',
+                                              style: myStyleRoboto(fontSize: 12.sp, color: AppColors.appWhiteColor, fontWeight: FontWeight.w500,),
+                                            ),
+
 
                                             /// Increment
                                             InkWell(
                                               onTap: (){
-                                                // Find the index of the selected product
-                                                // int selectedIndex = viewAllProductsProvider.productsList.indexWhere((product) => product.id == cartProvider.selectedProductId);
-                                                // cartProvider.incrementProductCounter(selectedIndex);
-
-                                                int cartIndex = cartProvider.cartList.indexWhere((product) => product.id == cartProvider.selectedProductId);
-                                                cartProvider.updateCartProductQuantity(cartIndex, cartProvider.cartList[cartIndex].productQuantity!+1);
+                                                int cartIndex = cartProvider.cartList.indexWhere((product) => product.id == productsList.id);
+                                                print("Check index>>>${cartIndex}");
+                                                cartProvider.updateCartProductQuantity(cartIndex, cartProvider.cartList[cartIndex].productQuantity! + 1);
                                               },
                                               child: Container(
                                                 height: 30.h,
@@ -391,7 +397,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                     ) : SizedBox.shrink(),
 
                                     /// Shopping Cart
-                                    viewAllProductsProvider.productsList.firstWhere((product) => product.id == productsList.id).isShopping == false?
+                                    viewAllProductsProvider.productsList.firstWhere((product) => product.id == productsList.id).isShopping == false && cartProvider.cartList.firstWhereOrNull((element) => element.id == productsList.id)?.productQuantity == null?
                                     Positioned(
                                       bottom: 5,
                                       right: 5,
@@ -410,10 +416,6 @@ class _ProductScreenState extends State<ProductScreen> {
 
                                             cartProvider.addToCart(model: selectedProduct, context: context, cartId: 'cart_list', quantity: 1);
 
-                                            // int selectedIndex = viewAllProductsProvider.productsList.indexWhere((product) => product.id == cartProvider.selectedProductId);
-
-                                            // cartProvider.incrementProductCounter(selectedIndex);
-                                            // cartProvider.incrementProductCounter(selectedIndex);
                                           });
                                         },
                                         child: Container(
